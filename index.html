@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steam İndirimleri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#060a12;
+  --surface:#0d1220;
+  --surface2:#111827;
+  --border:#1e293b;
+  --accent:#00d4ff;
+  --accent2:#ff4f6d;
+  --green:#22c55e;
+  --gold:#f59e0b;
+  --text:#e2e8f0;
+  --muted:#64748b;
+  --card-hover:#131e2f;
+}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+/* BG noise + grid */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;z-index:0;
+}
+body::after{
+  content:'';
+  position:fixed;top:0;left:0;right:0;height:400px;
+  background:radial-gradient(ellipse 80% 60% at 50% -20%,rgba(0,212,255,.12),transparent);
+  pointer-events:none;z-index:0;
+}
+
+/* HEADER */
+header{
+  position:relative;z-index:10;
+  text-align:center;
+  padding:60px 20px 40px;
+  border-bottom:1px solid var(--border);
+}
+header h1{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(36px,6vw,72px);
+  font-weight:800;
+  letter-spacing:-2px;
+  background:linear-gradient(135deg,#fff 0%,var(--accent) 60%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;margin-bottom:10px;
+}
+header p{font-size:14px;color:var(--muted);letter-spacing:.5px;}
+.live-dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--green);margin-right:6px;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+
+/* STATS BAR */
+.stats-bar{
+  display:flex;gap:0;
+  border-bottom:1px solid var(--border);
+  position:relative;z-index:10;
+}
+.stat{
+  flex:1;padding:16px 24px;text-align:center;
+  border-right:1px solid var(--border);
+}
+.stat:last-child{border-right:none}
+.stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--accent)}
+.stat-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+/* CONTROLS */
+.controls{
+  position:relative;z-index:10;
+  display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+  background:rgba(13,18,32,.8);
+  backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:100;
+}
+.search-wrap{
+  position:relative;flex:1;min-width:200px;
+}
+.search-wrap svg{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;color:var(--muted);pointer-events:none;
+}
+#ara{
+  width:100%;padding:10px 12px 10px 38px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;transition:border .2s;
+}
+#ara:focus{border-color:var(--accent)}
+#ara::placeholder{color:var(--muted)}
+.btn-group{display:flex;gap:6px;flex-wrap:wrap}
+.ctrl-btn{
+  padding:9px 16px;border-radius:8px;font-size:13px;font-weight:500;
+  border:1px solid var(--border);background:var(--surface2);color:var(--muted);
+  cursor:pointer;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif;
+}
+.ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ctrl-btn.active{background:var(--accent);color:#000;border-color:var(--accent)}
+select{
+  padding:9px 14px;border-radius:8px;font-size:13px;
+  border:1px solid var(--border);background:var(--surface2);color:var(--text);
+  cursor:pointer;outline:none;font-family:'DM Sans',sans-serif;
+}
+select:focus{border-color:var(--accent)}
+.fav-toggle{
+  padding:9px 16px;border-radius:8px;font-size:13px;font-weight:500;
+  border:1px solid var(--border);background:var(--surface2);color:var(--muted);
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;
+  font-family:'DM Sans',sans-serif;
+}
+.fav-toggle.on{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.1)}
+
+/* SECTION */
+.section{position:relative;z-index:10;padding:32px 24px 16px}
+.section-header{
+  display:flex;align-items:center;gap:12px;margin-bottom:24px;
+  font-family:'Syne',sans-serif;font-size:22px;font-weight:700;
+}
+.section-header span{color:var(--muted);font-size:14px;font-weight:400;font-family:'DM Sans',sans-serif}
+.badge{
+  padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.8px;
+}
+.badge-blue{background:rgba(0,212,255,.15);color:var(--accent);border:1px solid rgba(0,212,255,.3)}
+.badge-red{background:rgba(255,79,109,.15);color:var(--accent2);border:1px solid rgba(255,79,109,.3)}
+.badge-green{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:16px;
+}
+
+/* CARD */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;transition:all .25s;position:relative;cursor:pointer;
+}
+.card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(0,212,255,.4);
+  background:var(--card-hover);
+  box-shadow:0 20px 40px rgba(0,0,0,.5),0 0 0 1px rgba(0,212,255,.1);
+}
+.card-img{width:100%;height:160px;object-fit:cover;display:block}
+.card-img-wrap{position:relative;overflow:hidden}
+.card-img-wrap::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 50%,var(--surface) 100%);
+}
+.discount-tag{
+  position:absolute;top:10px;left:10px;z-index:2;
+  background:var(--accent2);color:#fff;
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  padding:4px 10px;border-radius:6px;
+}
+.free-tag{
+  position:absolute;top:10px;left:10px;z-index:2;
+  background:var(--green);color:#000;
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  padding:4px 10px;border-radius:6px;letter-spacing:.5px;
+}
+.fav-btn{
+  position:absolute;top:10px;right:10px;z-index:2;
+  width:32px;height:32px;border-radius:6px;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.15);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:all .2s;backdrop-filter:blur(4px);
+}
+.fav-btn:hover{border-color:var(--gold);background:rgba(245,158,11,.2)}
+.fav-btn.active{border-color:var(--gold);background:rgba(245,158,11,.25)}
+.card-body{padding:14px 16px 16px}
+.card-title{
+  font-weight:500;font-size:15px;margin-bottom:10px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:var(--text);
+}
+.price-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.price{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--green)}
+.original{font-size:13px;color:var(--muted);text-decoration:line-through}
+.meta{display:flex;align-items:center;justify-content:space-between}
+.rating{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.go-btn{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:12px;font-weight:500;padding:5px 12px;border-radius:6px;
+  background:rgba(0,212,255,.1);color:var(--accent);border:1px solid rgba(0,212,255,.2);
+  text-decoration:none;transition:all .2s;
+}
+.go-btn:hover{background:rgba(0,212,255,.2);border-color:rgba(0,212,255,.5)}
+
+/* LOADING / ERROR */
+.loader{
+  grid-column:1/-1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:80px 20px;gap:16px;color:var(--muted);
+}
+.spin{
+  width:40px;height:40px;border:2px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:12px 18px;
+  font-size:14px;color:var(--text);
+  transform:translateY(100px);opacity:0;
+  transition:all .3s;pointer-events:none;
+  display:flex;align-items:center;gap:8px;
+}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:8px 0}
+
+/* EMPTY */
+.empty{
+  grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted);font-size:15px;
+}
+
+/* REFRESH TIMER */
+.refresh-bar{
+  position:relative;z-index:10;
+  padding:8px 24px;
+  font-size:12px;color:var(--muted);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+  background:rgba(13,18,32,.5);
+}
+.refresh-progress{
+  flex:1;height:2px;background:var(--border);border-radius:2px;overflow:hidden;
+}
+.refresh-fill{
+  height:100%;background:var(--accent);border-radius:2px;
+  width:100%;transition:width 1s linear;
+}
+
+/* Footer */
+footer{
+  position:relative;z-index:10;
+  text-align:center;padding:40px 20px;
+  color:var(--muted);font-size:13px;border-top:1px solid var(--border);
+  margin-top:60px;
+}
+
+@media(max-width:600px){
+  .stats-bar{flex-wrap:wrap}
+  .stat{min-width:50%;border-right:none;border-bottom:1px solid var(--border)}
+  .controls{flex-direction:column;align-items:stretch}
+  .search-wrap,.btn-group,.fav-toggle,select{width:100%}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>STEAM İNDİRİMLER</h1>
+  <p><span class="live-dot"></span>Canlı fiyatlar · CheapShark API</p>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value" id="st-toplam">—</div><div class="stat-label">Oyun</div></div>
+  <div class="stat"><div class="stat-value" id="st-ort" style="color:var(--accent2)">—</div><div class="stat-label">Ort. İndirim</div></div>
+  <div class="stat"><div class="stat-value" id="st-ucr" style="color:var(--green)">—</div><div class="stat-label">Ücretsiz</div></div>
+  <div class="stat"><div class="stat-value" id="st-fav" style="color:var(--gold)">—</div><div class="stat-label">Favoriler</div></div>
+</div>
+
+<div class="refresh-bar">
+  <span id="son-guncelleme">Yükleniyor...</span>
+  <div class="refresh-progress"><div class="refresh-fill" id="progress-fill"></div></div>
+  <span>5 dk'da güncellenir</span>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" id="ara" placeholder="Oyun ara...">
+  </div>
+  <div class="btn-group">
+    <button class="ctrl-btn active" data-filter="hepsi">Hepsi</button>
+    <button class="ctrl-btn" data-filter="indirimli">İndirimli</button>
+    <button class="ctrl-btn" data-filter="ucretsiz">Ücretsiz</button>
+  </div>
+  <select id="sirala">
+    <option value="indirim">En Çok İndirimli</option>
+    <option value="fiyat-asc">Fiyat (Düşükten)</option>
+    <option value="fiyat-desc">Fiyat (Yüksekten)</option>
+    <option value="puan">Rating</option>
+    <option value="isim">İsim A-Z</option>
+  </select>
+  <button class="fav-toggle" id="fav-toggle-btn">⭐ Favoriler</button>
+</div>
+
+<div id="main-content" style="position:relative;z-index:10;">
+  <div class="section">
+    <div class="grid">
+      <div class="loader"><div class="spin"></div><span>Veriler yükleniyor...</span></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Veriler CheapShark API üzerinden alınmaktadır · Fiyatlar USD cinsindendir
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let tumOyunlar = [];
+let favoriler = JSON.parse(localStorage.getItem('steam-favs') || '[]');
+let aktifFilter = 'hepsi';
+let sadeceFav = false;
+let progressTimer = null;
+
+function gosterToast(msg, ikon='✓'){
+  const t = document.getElementById('toast');
+  t.innerHTML = `<span>${ikon}</span> ${msg}`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+function isFav(id){ return favoriler.includes(String(id)) }
+
+function toggleFav(id, ad, e){
+  e.preventDefault(); e.stopPropagation();
+  id = String(id);
+  if(isFav(id)){
+    favoriler = favoriler.filter(f=>f!==id);
+    gosterToast(`${ad} favorilerden çıkarıldı`, '✕');
+  } else {
+    favoriler.push(id);
+    gosterToast(`${ad} favorilere eklendi`, '⭐');
+  }
+  localStorage.setItem('steam-favs', JSON.stringify(favoriler));
+  updateStats();
+  render();
+}
+
+function formatTL(usd){ return `$${parseFloat(usd).toFixed(2)}` }
+
+function oyunKarti(o){
+  const fav = isFav(o.steamAppID);
+  const img = `https://cdn.akamai.steamstatic.com/steam/apps/${o.steamAppID}/header.jpg`;
+  const url = `https://store.steampowered.com/app/${o.steamAppID}`;
+  const indirim = Math.round(parseFloat(o.savings || 0));
+  const ucret = parseFloat(o.salePrice) === 0;
+  const puan = o.dealRating ? parseFloat(o.dealRating).toFixed(1) : '—';
+
+  return `
+  <div class="card" onclick="window.open('${url}','_blank')">
+    <div class="card-img-wrap">
+      <img class="card-img" src="${img}" onerror="this.src='https://via.placeholder.com/460x215/0d1220/64748b?text=No+Image'" loading="lazy">
+      ${ucret ? `<div class="free-tag">ÜCRETSİZ</div>` : indirim>=50 ? `<div class="discount-tag">−${indirim}%</div>` : ''}
+      <div class="fav-btn ${fav?'active':''}" onclick="toggleFav('${o.steamAppID}','${o.title.replace(/'/g,"\\'")}',event)">
+        ${fav ? '⭐' : '☆'}
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-title" title="${o.title}">${o.title}</div>
+      <div class="price-row">
+        ${ucret
+          ? `<span class="price" style="color:var(--green)">ÜCRETSİZ</span><span class="original">${formatTL(o.normalPrice)}</span>`
+          : `<span class="price">${formatTL(o.salePrice)}</span><span class="original">${formatTL(o.normalPrice)}</span>`
+        }
+        ${!ucret && indirim > 0 ? `<span class="badge badge-red">−${indirim}%</span>` : ''}
+      </div>
+      <div class="meta">
+        <span class="rating">⭐ ${puan} · ${ucret ? '<span style="color:var(--green)">Ücretsiz</span>' : `<span class="badge badge-blue" style="font-size:10px;padding:2px 6px">${indirim}% off</span>`}</span>
+        <a href="${url}" target="_blank" class="go-btn" onclick="event.stopPropagation()">Steam ↗</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+function render(){
+  const q = document.getElementById('ara').value.toLowerCase().trim();
+  const sortBy = document.getElementById('sirala').value;
+
+  let liste = [...tumOyunlar];
+
+  // Filter by type
+  if(aktifFilter === 'indirimli') liste = liste.filter(o => parseFloat(o.salePrice) > 0);
+  if(aktifFilter === 'ucretsiz') liste = liste.filter(o => parseFloat(o.salePrice) === 0);
+
+  // Sadece favoriler
+  if(sadeceFav) liste = liste.filter(o => isFav(o.steamAppID));
+
+  // Arama
+  if(q) liste = liste.filter(o => o.title.toLowerCase().includes(q));
+
+  // Sırala
+  liste.sort((a,b) => {
+    if(sortBy === 'indirim') return parseFloat(b.savings||0) - parseFloat(a.savings||0);
+    if(sortBy === 'fiyat-asc') return parseFloat(a.salePrice) - parseFloat(b.salePrice);
+    if(sortBy === 'fiyat-desc') return parseFloat(b.salePrice) - parseFloat(a.salePrice);
+    if(sortBy === 'puan') return parseFloat(b.dealRating||0) - parseFloat(a.dealRating||0);
+    if(sortBy === 'isim') return a.title.localeCompare(b.title,'tr');
+    return 0;
+  });
+
+  const indirimli = liste.filter(o => parseFloat(o.salePrice) > 0);
+  const ucretsiz = liste.filter(o => parseFloat(o.salePrice) === 0);
+
+  let html = '';
+
+  if(aktifFilter !== 'ucretsiz' && indirimli.length > 0){
+    html += `<div class="section">
+      <div class="section-header">
+        <span>🔥</span> İndirimli Oyunlar
+        <span>${indirimli.length} oyun</span>
+        <span class="badge badge-red">−%90+</span>
+      </div>
+      <div class="grid">${indirimli.map(oyunKarti).join('')}</div>
+    </div>`;
+  }
+
+  if(aktifFilter !== 'indirimli' && ucretsiz.length > 0){
+    html += `<div class="divider"></div>
+    <div class="section">
+      <div class="section-header">
+        <span>🎁</span> Ücretsiz Oyunlar
+        <span>${ucretsiz.length} oyun</span>
+        <span class="badge badge-green">Bedava</span>
+      </div>
+      <div class="grid">${ucretsiz.map(oyunKarti).join('')}</div>
+    </div>`;
+  }
+
+  if(html === ''){
+    html = `<div class="section"><div class="grid"><div class="empty">
+      ${q ? `"${q}" için sonuç bulunamadı` : 'Gösterilecek oyun yok'}
+    </div></div></div>`;
+  }
+
+  document.getElementById('main-content').innerHTML = html;
+}
+
+function updateStats(){
+  const indirimler = tumOyunlar.filter(o => parseFloat(o.salePrice) > 0);
+  const ortIndirim = indirimler.length
+    ? Math.round(indirimler.reduce((s,o) => s + parseFloat(o.savings||0), 0) / indirimler.length)
+    : 0;
+  document.getElementById('st-toplam').textContent = tumOyunlar.length;
+  document.getElementById('st-ort').textContent = ortIndirim + '%';
+  document.getElementById('st-ucr').textContent = tumOyunlar.filter(o => parseFloat(o.salePrice) === 0).length;
+  document.getElementById('st-fav').textContent = favoriler.length;
+}
+
+function startProgress(){
+  const fill = document.getElementById('progress-fill');
+  let pct = 100;
+  fill.style.width = '100%';
+  clearInterval(progressTimer);
+  progressTimer = setInterval(()=>{
+    pct -= 100 / 300; // 300 saniye = 5 dk
+    if(pct < 0) pct = 0;
+    fill.style.width = pct + '%';
+  }, 1000);
+}
+
+async function yukleDeal(url){
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('API hatası');
+  return r.json();
+}
+
+async function yukle(){
+  try {
+    document.getElementById('main-content').innerHTML = `
+      <div class="section"><div class="grid">
+        <div class="loader"><div class="spin"></div><span>Veriler yükleniyor...</span></div>
+      </div></div>`;
+
+    const [indirimler, ucretsizler] = await Promise.all([
+      yukleDeal('https://www.cheapshark.com/api/1.0/deals?storeID=1&lowerPrice=0.01&upperPrice=99&sortBy=savings&desc=true&pageSize=40'),
+      yukleDeal('https://www.cheapshark.com/api/1.0/deals?storeID=1&upperPrice=0&sortBy=DealRating&desc=true&pageSize=20')
+    ]);
+
+    // Sadece gerçek indirimli olanları al (min %70 indirim)
+    const filtreIndirim = indirimler.filter(o => parseFloat(o.savings||0) >= 70 && o.steamAppID);
+    const filtreUcr = ucretsizler.filter(o => o.steamAppID);
+
+    tumOyunlar = [...filtreIndirim, ...filtreUcr];
+
+    const tarih = new Date().toLocaleString('tr-TR');
+    document.getElementById('son-guncelleme').innerHTML = `<span class="live-dot"></span>Son güncelleme: ${tarih}`;
+
+    updateStats();
+    render();
+    startProgress();
+  } catch(err){
+    document.getElementById('main-content').innerHTML = `
+      <div class="section"><div class="grid">
+        <div class="loader" style="color:var(--accent2)">
+          ⚠️ Veriler yüklenemedi: ${err.message}<br>
+          <button class="ctrl-btn" onclick="yukle()" style="margin-top:16px">Tekrar Dene</button>
+        </div>
+      </div></div>`;
+  }
+}
+
+// Events
+document.getElementById('ara').addEventListener('input', render);
+document.getElementById('sirala').addEventListener('change', render);
+
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    aktifFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+document.getElementById('fav-toggle-btn').addEventListener('click', () => {
+  sadeceFav = !sadeceFav;
+  document.getElementById('fav-toggle-btn').classList.toggle('on', sadeceFav);
+  render();
+});
+
+yukle();
+setInterval(yukle, 300000);
+</script>
+</body>
+</html>
